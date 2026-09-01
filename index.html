@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Quiz de l'Innovation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,500..700&family=Work+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#141F2A;
+    --ink-2:#1B2A38;
+    --ink-3:#243849;
+    --paper:#F3ECDA;
+    --paper-dim:#D9D0B8;
+    --muted:#8FA0AC;
+    --gold:#D2A53D;
+    --gold-2:#EFCB6E;
+    --ember:#C1666B;
+    --ember-2:#D98B8F;
+    --line: rgba(243,236,218,0.12);
+    --line-strong: rgba(243,236,218,0.22);
+    --shadow: 0 20px 50px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(210,165,61,0.14), transparent 60%),
+      var(--ink);
+    color:var(--paper);
+    font-family:"Work Sans", sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--gold); color:var(--ink); }
+  a{color:var(--gold-2);}
+
+  .wrap{
+    max-width:820px;
+    margin:0 auto;
+    padding:2.5rem 1.5rem 5rem;
+  }
+
+  .screen{ display:none; animation:fadeIn .5s ease; }
+  .screen.active{ display:block; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+  .eyebrow{
+    font-family:"Space Mono", monospace;
+    font-size:0.72rem;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--gold-2);
+    margin:0 0 1rem;
+  }
+
+  h1{
+    font-family:"Fraunces", serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:clamp(2.1rem, 6vw, 3.2rem);
+    line-height:1.05;
+    margin:0 0 1.1rem;
+    color:var(--paper);
+  }
+  h2{
+    font-family:"Fraunces", serif;
+    font-weight:600;
+    font-size:1.5rem;
+    margin:0 0 0.6rem;
+    color:var(--paper);
+  }
+  h3{
+    font-family:"Fraunces", serif;
+    font-weight:600;
+    font-size:1.1rem;
+    margin:0 0 0.3rem;
+    color:var(--paper);
+  }
+  p{ line-height:1.65; color:var(--paper-dim); margin:0 0 1rem; }
+  .lede{ font-size:1.06rem; color:var(--paper); }
+
+  /* ---------- Intro ---------- */
+  #screen-intro{ text-align:left; padding-top:1rem; }
+  .intro-card{
+    background:linear-gradient(180deg, var(--ink-2), var(--ink));
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:2.4rem 2rem;
+    box-shadow:var(--shadow);
+  }
+  .intro-meta{
+    display:flex; gap:1.2rem; flex-wrap:wrap;
+    font-family:"Space Mono", monospace;
+    font-size:0.82rem; color:var(--muted);
+    margin:1.4rem 0 1.8rem;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    padding:0.9rem 0;
+  }
+  .intro-meta span{ display:flex; align-items:center; gap:0.4rem; }
+  .dot{ width:6px; height:6px; border-radius:50%; background:var(--gold); display:inline-block; }
+  .scale-box{
+    background:var(--ink-3);
+    border-radius:10px;
+    padding:1rem 1.2rem;
+    font-size:0.92rem;
+    color:var(--paper-dim);
+    margin-bottom:1.8rem;
+  }
+  .scale-box b{ color:var(--gold-2); font-weight:600; }
+
+  .btn{
+    font-family:"Work Sans", sans-serif;
+    font-weight:600;
+    font-size:1rem;
+    border:none;
+    cursor:pointer;
+    border-radius:999px;
+    padding:0.9rem 1.8rem;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn-primary{
+    background:linear-gradient(180deg, var(--gold-2), var(--gold));
+    color:#1B1404;
+    box-shadow:0 8px 24px rgba(210,165,61,0.28);
+  }
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 12px 30px rgba(210,165,61,0.36); }
+  .btn-primary:disabled{ opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none; }
+  .btn-ghost{
+    background:transparent;
+    border:1px solid var(--line-strong);
+    color:var(--paper);
+  }
+  .btn-ghost:hover{ background:var(--ink-3); }
+  .btn-row{ display:flex; justify-content:center; margin-top:2rem; }
+
+  /* ---------- Quiz : glisser-déposer à deux colonnes ---------- */
+  #screen-quiz .quiz-head{ margin-bottom:1.6rem; }
+  .quiz-note{
+    font-size:0.88rem; color:var(--muted);
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:0.8rem 1rem;
+    margin-bottom:1.8rem;
+  }
+  .col-label{
+    font-family:"Space Mono", monospace;
+    font-size:0.72rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 0.8rem;
+  }
+  /* .product-head / .num-badge / .product-name (base) are also used in the débrief cards further down */
+  .product-head{
+    display:flex; align-items:center; gap:0.7rem;
+    margin-bottom:0.8rem;
+  }
+  .num-badge{
+    flex:none;
+    width:28px; height:28px; border-radius:50%;
+    background:var(--ink-3);
+    border:1px solid var(--line-strong);
+    color:var(--gold-2);
+    font-family:"Space Mono", monospace;
+    font-size:0.82rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .product-name{
+    font-family:"Fraunces", serif;
+    font-weight:600;
+    font-size:1.08rem;
+    color:var(--paper);
+  }
+  .match-grid{
+    display:grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap:1.8rem;
+    align-items:start;
+  }
+  @media (max-width:760px){
+    .match-grid{ grid-template-columns:1fr; }
+    .col-sources{ position:relative; }
+  }
+
+  .product-card{
+    display:flex; align-items:center; gap:0.7rem;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:0.7rem 0.9rem;
+    margin-bottom:0.7rem;
+  }
+  .product-icon{
+    flex:none;
+    width:42px; height:42px; border-radius:50%;
+    background:linear-gradient(180deg, var(--gold-2), var(--gold));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 12px rgba(210,165,61,0.22);
+  }
+  .product-icon svg{ width:22px; height:22px; }
+  .product-icon{ overflow:hidden; position:relative; }
+  .product-icon img{
+    width:100%; height:100%;
+    object-fit:cover;
+    border-radius:50%;
+    display:block;
+  }
+  .product-icon .icon-fallback{
+    display:none;
+    width:100%; height:100%;
+    align-items:center; justify-content:center;
+  }
+  .product-card .product-name{
+    flex:none;
+    width:100%;
+    max-width:118px;
+    font-size:0.92rem;
+    line-height:1.25;
+  }
+  .product-num{
+    display:block;
+    font-family:"Space Mono", monospace;
+    font-size:0.68rem;
+    color:var(--muted);
+    margin-bottom:0.1rem;
+  }
+
+  .drop-slot{
+    flex:1;
+    min-height:46px;
+    border:1.5px dashed var(--line-strong);
+    border-radius:10px;
+    display:flex; align-items:center;
+    padding:0.35rem 0.6rem;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .drop-slot.drag-over{ border-color:var(--gold-2); background:rgba(239,203,110,0.09); }
+  .drop-slot.filled{ border-style:solid; border-color:var(--line); padding:0.2rem; }
+  .drop-slot.missing{ border-color:var(--ember-2); }
+  .slot-placeholder{
+    font-size:0.78rem; color:var(--muted); font-style:italic;
+  }
+
+  .col-sources .pool{
+    display:flex; flex-wrap:wrap; gap:0.55rem;
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:0.9rem;
+    min-height:70px;
+    align-content:flex-start;
+  }
+  .source-card{
+    background:var(--ink-3);
+    border:1px solid var(--line-strong);
+    border-radius:9px;
+    padding:0.5rem 0.7rem;
+    font-size:0.83rem;
+    line-height:1.35;
+    color:var(--paper);
+    cursor:grab;
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+  }
+  .drop-slot .source-card{ width:100%; }
+  .source-card b{
+    color:var(--gold-2);
+    font-family:"Space Mono", monospace;
+    margin-right:0.25rem;
+  }
+  .source-card.dragging{
+    position:fixed;
+    z-index:999;
+    cursor:grabbing;
+    box-shadow:0 14px 34px rgba(0,0,0,0.45);
+    opacity:0.97;
+  }
+
+  .missing-alert{
+    display:none;
+    font-size:0.88rem;
+    color:var(--ember-2);
+    text-align:center;
+    margin-top:0.9rem;
+  }
+  .missing-alert.show{ display:block; }
+
+  /* ---------- Results ---------- */
+  .results-head{ text-align:center; margin-bottom:2rem; }
+  .score-row{ display:flex; justify-content:center; margin:1.2rem 0 1rem; }
+  .score-box{ text-align:center; }
+  .score-num{
+    font-family:"Space Mono", monospace; font-weight:700;
+    font-size:2.4rem; color:var(--gold-2);
+    display:block;
+  }
+  .score-cap{ font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; }
+  .score-gauge{
+    max-width:420px; margin:0 auto 1.2rem;
+    height:8px; border-radius:999px;
+    background:var(--ink-3);
+    overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .score-gauge-fill{
+    height:100%; border-radius:999px;
+    background:linear-gradient(90deg, var(--gold), var(--gold-2));
+  }
+  .relativity-note{
+    max-width:560px; margin:0 auto; font-size:0.9rem; color:var(--muted); text-align:center;
+  }
+
+  .result-card{
+    background:var(--ink-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:1.3rem 1.4rem;
+    margin-bottom:1rem;
+  }
+  .result-card .product-head{ margin-bottom:0.7rem; }
+  .verdict-pill{
+    display:inline-flex; align-items:center; gap:0.4rem;
+    font-family:"Space Mono", monospace;
+    font-size:0.78rem; font-weight:700;
+    letter-spacing:0.03em;
+    padding:0.3rem 0.7rem;
+    border-radius:999px;
+    margin-left:auto;
+  }
+  .verdict-pill.ok{ background:rgba(239,203,110,0.15); color:var(--gold-2); border:1px solid rgba(239,203,110,0.3); }
+  .verdict-pill.ko{ background:rgba(217,139,143,0.14); color:var(--ember-2); border:1px solid rgba(217,139,143,0.3); }
+
+  .answer-line{ font-size:0.94rem; color:var(--paper-dim); margin-bottom:0.3rem; }
+  .answer-line b{ color:var(--paper); font-weight:600; }
+  .correct-line{ font-size:0.94rem; color:var(--gold-2); margin-bottom:0.7rem; }
+
+  .story{
+    font-family:"Fraunces", serif;
+    font-style:italic;
+    font-size:0.97rem;
+    line-height:1.6;
+    color:var(--paper-dim);
+    border-top:1px solid var(--line);
+    padding-top:0.8rem;
+    margin-top:0.4rem;
+  }
+
+  /* ---------- Conseils / hors-champ ---------- */
+  .conseils-section{ margin-top:2.6rem; }
+  .conseils-intro{
+    text-align:center;
+    max-width:560px;
+    margin:0 auto 1.8rem;
+  }
+  .tips-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1.1rem 1.4rem;
+  }
+  @media (max-width:600px){
+    .tips-grid{ grid-template-columns:1fr; }
+  }
+  .tip-card{
+    display:flex; align-items:flex-start; gap:0.9rem;
+  }
+  .tip-icon{
+    flex:none;
+    width:52px; height:52px; border-radius:50%;
+    background:linear-gradient(180deg, var(--gold-2), var(--gold));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 16px rgba(210,165,61,0.25);
+  }
+  .tip-icon svg{ width:26px; height:26px; }
+  .tip-text{ font-size:0.94rem; color:var(--paper); line-height:1.5; padding-top:0.5rem; }
+
+  footer.credit{
+    text-align:center;
+    margin-top:3rem;
+    font-family:"Space Mono", monospace;
+    font-size:0.72rem;
+    color:var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <div id="screen-intro" class="screen active">
+    <p class="eyebrow">Exercice &middot; Sources d'inspiration</p>
+    <h1>Le Quiz de l'Innovation</h1>
+    <div class="intro-card">
+      <p class="lede">D'où viennent les innovations&nbsp;? Qu'est-ce qui inspire vraiment l'invention&nbsp;? Ce court quiz retrace l'origine réelle de onze produits que vous connaissez bien &mdash; pour mieux comprendre, ensemble, comment nourrir notre propre capacité à repérer des opportunités.</p>
+      <div class="intro-meta">
+        <span><i class="dot"></i>11 produits à retrouver</span>
+        <span><i class="dot"></i>17 sources possibles</span>
+        <span><i class="dot"></i>5 minutes environ</span>
+      </div>
+      <div class="scale-box">
+        Pour chaque produit, glissez sa <b>véritable</b> source d'inspiration depuis la colonne de droite. Une seule réponse est correcte par produit &mdash; et certaines propositions ne correspondent à aucun produit de la liste : à vous de ne pas vous laisser piéger.
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goTo('quiz')">Commencer le quiz &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ QUIZ ============ -->
+  <div id="screen-quiz" class="screen">
+    <div class="quiz-head">
+      <p class="eyebrow">Questionnaire</p>
+      <h2>À chaque produit, sa source d'inspiration</h2>
+    </div>
+    <div class="quiz-note">Faites glisser chaque source, dans la colonne de droite, jusqu'à la case du produit correspondant à gauche. Vous pouvez déplacer une source déjà posée pour changer d'avis.</div>
+    <div class="match-grid">
+      <div class="col-products">
+        <p class="col-label">Produits</p>
+        <div id="products-list"></div>
+      </div>
+      <div class="col-sources">
+        <p class="col-label">Sources d'inspiration</p>
+        <div class="pool" id="pool"></div>
+      </div>
+    </div>
+    <div class="missing-alert" id="missing-alert">Merci de compléter les 11 produits avant de continuer.</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="submit-btn" onclick="submitQuiz()">Voir mon débrief &rarr;</button>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS ============ -->
+  <div id="screen-results" class="screen">
+    <div class="results-head">
+      <p class="eyebrow">Débrief</p>
+      <h2>Votre résultat</h2>
+      <div class="score-row">
+        <div class="score-box">
+          <span class="score-num" id="score-num">0 / 11</span>
+          <span class="score-cap">bonnes réponses</span>
+        </div>
+      </div>
+      <div class="score-gauge"><div class="score-gauge-fill" id="score-gauge-fill" style="width:0%"></div></div>
+      <p class="relativity-note">Le score compte moins que ce qu'il révèle&nbsp;: chacune de ces innovations est née d'un déclic très ordinaire &mdash; une gêne, une observation, un accident &mdash; loin des laboratoires de R&amp;D.</p>
+    </div>
+
+    <div id="results-list"></div>
+
+    <div class="conseils-section">
+      <div class="conseils-intro">
+        <p class="eyebrow" style="text-align:center;">Pour aller plus loin</p>
+        <h2>Conseils pour favoriser le hors-champ</h2>
+        <p>Toutes ces innovations sont nées en dehors du champ habituel de leurs inventeurs. Voici six façons concrètes de cultiver ce même regard.</p>
+      </div>
+      <div class="tips-grid" id="tips-grid"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="restartQuiz()">Recommencer</button>
+    </div>
+  </div>
+
+  <footer class="credit">Le Quiz de l'Innovation &middot; inspiré des travaux de Kouzes &amp; Posner</footer>
+</div>
+
+<script>
+  // ---------- Data ----------
+  var sources = {
+    a: "Jeu universitaire utilisant des moules à tarte",
+    b: "Hauts de jouets pour enfants",
+    c: "Outils agricoles",
+    d: "Films de science-fiction avec des soucoupes volantes",
+    e: "Un meilleur marque-page pour les cantiques d'église",
+    f: "Médicament pour traiter les problèmes cardiaques",
+    g: "Bardanes collées à un pantalon",
+    h: "Une manière de faire de l'exercice après une opération au genou",
+    i: "Ingénieur naval travaillant avec des ressorts de tension",
+    j: "Anneau d'exercice pour enfants australiens",
+    k: "Hameçon pris dans un filet",
+    l: "Observer les peintres automobiles peignant des voitures bicolores",
+    m: "Comment les artistes ont peint par-dessus leurs erreurs",
+    n: "Un conjoint qui s'est coupé les doigts dans la cuisine",
+    o: "Médicament pour traiter l'arthrite",
+    p: "Cours de mathématiques en topologie",
+    q: "De la colle renversée sur un bloc-notes"
+  };
+
+  var products = [
+    { name:"Pansement", letter:"n", icon:"bandage",
+      story:"En 1920, Earle Dickson, employé chez Johnson &amp; Johnson, voit sa femme Josephine se couper sans arrêt les doigts en cuisinant. Il lui prépare des bandes adhésives pré-découpées qu'elle peut appliquer seule, d'une seule main. Son employeur repère l'idée et la commercialise : le Band-Aid est né d'un problème domestique très concret." },
+    { name:"FedEx", letter:"p", icon:"parcel",
+      story:"En 1965, Frederick Smith, étudiant à Yale, rédige un travail universitaire décrivant un système de livraison en étoile : tous les colis transitent par un point central (un « hub ») avant d'être redistribués. La légende veut que son professeur lui ait donné une note médiocre. Six ans plus tard, il fonde FedEx sur ce principe &mdash; qui révolutionne la logistique mondiale." },
+    { name:"Frisbee", letter:"a", icon:"disc",
+      story:"Dans les années 1940, les étudiants de Yale s'amusent à se lancer les moules à tarte vides de la Frisbie Pie Company du Connecticut, en criant « Frisbie ! » pour prévenir les passants. Walter Morrison transpose l'idée en plastique, et Wham-O commercialise le disque sous le nom « Frisbee » en 1957." },
+    { name:"Hacky Sack", letter:"h", icon:"beanbag",
+      story:"En 1972, John Stalberger, blessé au genou, cherche un exercice doux pour se rééduquer. Avec son ami Mike Marshall, ils cousent une petite balle souple à manipuler avec les pieds sans la laisser tomber. Le « footbag » devient un jouet mondial &mdash; une invention née d'un besoin médical personnel." },
+    { name:"Gyroscope", letter:"b", icon:"top",
+      story:"Le principe de stabilité par rotation est observé depuis des siècles dans les toupies. En 1852, le physicien français Léon Foucault formalise et nomme le « gyroscope » en s'appuyant sur ce comportement bien connu des jouets. Aujourd'hui, ce principe est partout : avions, smartphones, satellites, drones." },
+    { name:"Correcteur liquide (Tipp-Ex / Blanco)", letter:"m", icon:"bottle",
+      story:"Bette Nesmith Graham, secrétaire et peintre amateure à Dallas, en a assez de retaper ses pages à la machine à écrire. Elle observe que les artistes ne gomment pas leurs erreurs : ils repeignent par-dessus. Elle applique la même logique avec une peinture blanche, invente le Liquid Paper en 1956, et finit par vendre l'entreprise à Gillette pour 47,5 millions de dollars." },
+    { name:"Ruban de masquage", letter:"l", icon:"tape",
+      story:"En 1925, Richard Drew, jeune ingénieur chez 3M, visite un atelier de carrosserie. Il voit les peintres pester pour obtenir des lignes nettes entre les deux couleurs des voitures à la mode. Il invente un ruban adhésif à faible adhérence &mdash; le « masking tape » &mdash; qui devient un produit phare de 3M et lance la longue tradition d'innovation de l'entreprise." },
+    { name:"Post-it", letter:"e", icon:"postit",
+      story:"Histoire en deux temps : en 1968, Spencer Silver (chimiste 3M) découvre par hasard une colle faiblement adhésive mais réutilisable &mdash; sans application. Six ans plus tard, son collègue Art Fry, frustré que ses marque-pages tombent de son livre de cantiques pendant la chorale, se souvient de cette colle. Le Post-it sort en 1980 et devient une icône mondiale." },
+    { name:"Le Slinky", letter:"i", icon:"spring",
+      story:"En 1943, Richard James, ingénieur dans la marine américaine, travaille sur des ressorts pour stabiliser les instruments à bord des navires. Un ressort tombe d'une étagère et « marche » tout seul, en cascade. Sa femme Betty voit le potentiel ludique, trouve le nom « Slinky », et le jouet est lancé en 1945 &mdash; plus de 300 millions vendus depuis." },
+    { name:"Velcro", letter:"g", icon:"velcro",
+      story:"En 1941, l'ingénieur suisse George de Mestral rentre d'une promenade et trouve son pantalon et le pelage de son chien couverts de bardanes. Au microscope, il découvre que ces fruits sont équipés de minuscules crochets qui s'agrippent aux boucles du tissu. Il en tire le Velcro (contraction de velours et crochet), breveté en 1955 &mdash; un cas d'école de biomimétisme." },
+    { name:"Viagra", letter:"f", icon:"pill",
+      story:"Dans les années 1980, Pfizer développe le sildénafil pour traiter l'angine de poitrine et l'hypertension. Les essais cliniques sont décevants sur le plan cardiaque, mais les patients masculins signalent un effet secondaire inattendu. Pfizer pivote, et le Viagra est approuvé par la FDA en 1998 comme premier traitement oral de la dysfonction érectile &mdash; chiffre d'affaires record dès la première année." }
+  ];
+
+  var tips = [
+    { icon:"brain", text:"Organisez des excursions pour stimuler la réflexion." },
+    { icon:"press", text:"Lisez des magazines dans des domaines que vous ne connaissez pas." },
+    { icon:"network", text:"Contactez les clients et demandez-leur ce qu'ils aimeraient que vous fassiez et que vous ne faites pas." },
+    { icon:"clapper", text:"Allez voir la concurrence." },
+    { icon:"community", text:"Demandez au client de partager des idées lors d'une réunion de planification." },
+    { icon:"chat", text:"Observez le client utilisant votre produit ou service." }
+  ];
+
+  var icons = {
+    brain: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 6c-3 0-5 2-5 4.5 0 .8.2 1.5.6 2.1C7.4 13.3 6 15 6 17c0 1.6.8 3 2.1 3.8-.1.4-.1.8-.1 1.2 0 2.5 2 4.5 4.5 4.5.7 0 1.3-.1 1.9-.4.5.5 1.3.9 2.1.9V8c0-1.1-.9-2-2-2h-1.5z" fill="#1B1404"/><path d="M19 6c3 0 5 2 5 4.5 0 .8-.2 1.5-.6 2.1 1.2.7 2.6 2.4 2.6 4.4 0 1.6-.8 3-2.1 3.8.1.4.1.8.1 1.2 0 2.5-2 4.5-4.5 4.5-.7 0-1.3-.1-1.9-.4-.5.5-1.3.9-2.1.9V8c0-1.1.9-2 2-2H19z" fill="#1B1404"/><path d="M15.5 10.5c.6.6.6 1 0 1.5M16.5 15c.6.6.6 1 0 1.5M15.5 19.5c.6.6.6 1 0 1.5" stroke="#EFCB6E" stroke-width="1" stroke-linecap="round"/></svg>',
+    press: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="8" width="18" height="17" rx="1.5" fill="#1B1404"/><path d="M23 12h3v10a2.5 2.5 0 0 1-2.5 2.5H23V12z" fill="#1B1404"/><rect x="8" y="11" width="6" height="6" rx="0.5" fill="#EFCB6E"/><rect x="16" y="11" width="4" height="2" rx="0.5" fill="#EFCB6E"/><rect x="8" y="19" width="12" height="1.6" rx="0.5" fill="#EFCB6E"/><rect x="8" y="22" width="9" height="1.6" rx="0.5" fill="#EFCB6E"/></svg>',
+    network: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="3.2" fill="#1B1404"/><circle cx="6" cy="9" r="2.6" fill="#1B1404"/><circle cx="26" cy="9" r="2.6" fill="#1B1404"/><circle cx="6" cy="23" r="2.6" fill="#1B1404"/><circle cx="26" cy="23" r="2.6" fill="#1B1404"/><g stroke="#1B1404" stroke-width="1.8"><line x1="14" y1="14" x2="8" y2="10.5"/><line x1="18" y1="14" x2="24" y2="10.5"/><line x1="14" y1="18" x2="8" y2="21.5"/><line x1="18" y1="18" x2="24" y2="21.5"/></g></svg>',
+    clapper: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="13" width="22" height="12" rx="1.5" fill="#1B1404"/><path d="M5 8.5l1.8-3 4 2-2 3z" fill="#1B1404"/><path d="M11 7l1.8-3 4 2-2 3z" fill="#1B1404"/><path d="M17 5.5l1.8-3 4 2-2 3z" fill="#1B1404"/><rect x="5" y="8.5" width="22" height="4" fill="#1B1404"/><rect x="10" y="17" width="5" height="4.5" fill="#EFCB6E"/></svg>',
+    community: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="9" r="3.6" fill="#1B1404"/><circle cx="7" cy="12" r="3" fill="#1B1404"/><circle cx="25" cy="12" r="3" fill="#1B1404"/><path d="M16 14.5c-4.4 0-8 3-8 7v2h16v-2c0-4-3.6-7-8-7z" fill="#1B1404"/><path d="M7 16.5c-3 .3-5.5 2.6-5.5 5.5v1.5h6" fill="#1B1404"/><path d="M25 16.5c3 .3 5.5 2.6 5.5 5.5v1.5h-6" fill="#1B1404"/></svg>',
+    chat: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 7h20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H14l-5 4.5V21H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z" fill="#1B1404"/><circle cx="11" cy="14" r="1.6" fill="#EFCB6E"/><circle cx="16" cy="14" r="1.6" fill="#EFCB6E"/><circle cx="21" cy="14" r="1.6" fill="#EFCB6E"/></svg>',
+
+    /* --- Icônes des 11 produits du quiz (dessinées à la main, génériques, sans marque) --- */
+    bandage: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(-35 16 16)"><rect x="7" y="13" width="18" height="6" rx="3" fill="#1B1404"/><circle cx="9.5" cy="16" r="2.6" fill="#EFCB6E"/><circle cx="22.5" cy="16" r="2.6" fill="#EFCB6E"/><circle cx="9.5" cy="16" r="0.9" fill="#1B1404"/><circle cx="22.5" cy="16" r="0.9" fill="#1B1404"/></g></svg>',
+    parcel: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="6" y="11" width="20" height="15" rx="1.5" fill="#1B1404"/><path d="M6 11l10-4 10 4" stroke="#1B1404" stroke-width="2" fill="none" stroke-linejoin="round"/><path d="M16 7v19" stroke="#EFCB6E" stroke-width="1.4"/><path d="M6 11l10 4 10-4" stroke="#EFCB6E" stroke-width="1.4" fill="none"/></svg>',
+    disc: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="16" cy="18" rx="12" ry="5.2" fill="#1B1404"/><ellipse cx="16" cy="16.5" rx="12" ry="5.2" fill="#1B1404"/><ellipse cx="16" cy="16.5" rx="7.5" ry="3.1" fill="#EFCB6E" opacity="0.55"/></svg>',
+    beanbag: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="18" r="9" fill="#1B1404"/><path d="M16 9c1.4 1.6 1.4 3 0 4.4M9.6 12.4c2 .8 3 1.9 3 3.4M22.4 12.4c-2 .8-3 1.9-3 3.4" stroke="#EFCB6E" stroke-width="1.3" stroke-linecap="round"/><circle cx="16" cy="6.5" r="1.6" fill="#1B1404"/></svg>',
+    top: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 8h10l-1.5 10.5a3.5 3.5 0 0 1-3.46 3H15.96a3.5 3.5 0 0 1-3.46-3L11 8z" fill="#1B1404"/><rect x="9" y="6" width="14" height="3" rx="1.2" fill="#1B1404"/><path d="M16 21.5v4" stroke="#1B1404" stroke-width="2" stroke-linecap="round"/><path d="M6 12c-1.6 1.2-1.6 2.6 0 4M26 12c1.6 1.2 1.6 2.6 0 4" stroke="#EFCB6E" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg>',
+    bottle: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 9h6v3.4l2 2.6v9a2.5 2.5 0 0 1-2.5 2.5h-5A2.5 2.5 0 0 1 11 24v-9l2-2.6V9z" fill="#1B1404"/><rect x="12.5" y="5.5" width="7" height="3.5" rx="1" fill="#1B1404"/><rect x="12" y="19" width="8" height="3" fill="#EFCB6E" opacity="0.65"/></svg>',
+    tape: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="11" fill="#1B1404"/><circle cx="16" cy="16" r="4.3" fill="#EFCB6E"/><circle cx="16" cy="16" r="4.3" fill="none" stroke="#1B1404" stroke-width="1"/></svg>',
+    postit: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 7h14l4 4v14H7V7z" fill="#1B1404"/><path d="M21 7v4h4" fill="#EFCB6E" opacity="0.7"/><rect x="10.5" y="13" width="9" height="1.4" rx="0.5" fill="#EFCB6E"/><rect x="10.5" y="16.5" width="9" height="1.4" rx="0.5" fill="#EFCB6E"/><rect x="10.5" y="20" width="6" height="1.4" rx="0.5" fill="#EFCB6E"/></svg>',
+    spring: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><g stroke="#1B1404" stroke-width="2.4" fill="none"><ellipse cx="16" cy="9" rx="9" ry="3.1"/><ellipse cx="16" cy="14" rx="9" ry="3.1"/><ellipse cx="16" cy="19" rx="9" ry="3.1"/><ellipse cx="16" cy="24" rx="9" ry="3.1"/></g></svg>',
+    velcro: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="22" height="22" rx="4" fill="#1B1404"/><g fill="#EFCB6E"><circle cx="11" cy="11" r="1.7"/><circle cx="16" cy="11" r="1.7"/><circle cx="21" cy="11" r="1.7"/><circle cx="11" cy="16" r="1.7"/><circle cx="16" cy="16" r="1.7"/><circle cx="21" cy="16" r="1.7"/><circle cx="11" cy="21" r="1.7"/><circle cx="16" cy="21" r="1.7"/><circle cx="21" cy="21" r="1.7"/></g></svg>',
+    pill: '<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 4l12 12-12 12L4 16 16 4z" fill="#1B1404"/><path d="M16 4l6 6-12 12-6-6L16 4z" fill="#EFCB6E" opacity="0.55"/></svg>'
+  };
+
+  // Builds a product's icon slot: tries a real photo first (images/<icon>.jpg),
+  // and falls back to the hand-drawn SVG icon if that file doesn't exist yet.
+  // As soon as a real photo is dropped into /images with the right name, it
+  // takes over automatically — no code change needed.
+  function productIconHTML(p){
+    return '<img src="images/' + p.icon + '.jpg" alt="' + p.name + '" ' +
+      'onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' +
+      '<span class="icon-fallback">' + (icons[p.icon] || '') + '</span>';
+  }
+
+  // ---------- Build quiz (glisser-déposer) ----------
+  var sortedLetters = Object.keys(sources).sort();
+  var slotEls = [];   // one drop-slot element per product, in product order
+  var poolEl = null;
+
+  function makeSourceCard(letter){
+    var card = document.createElement('div');
+    card.className = 'source-card';
+    card.dataset.letter = letter;
+    card.innerHTML = '<b>' + letter + '.</b>' + sources[letter];
+    card.addEventListener('pointerdown', onCardPointerDown);
+    return card;
+  }
+
+  function renderProducts(){
+    var list = document.getElementById('products-list');
+    list.innerHTML = '';
+    slotEls = [];
+    products.forEach(function(p, idx){
+      var card = document.createElement('div');
+      card.className = 'product-card';
+
+      var iconWrap = document.createElement('div');
+      iconWrap.className = 'product-icon';
+      iconWrap.innerHTML = productIconHTML(p);
+
+      var nameWrap = document.createElement('div');
+      nameWrap.className = 'product-name';
+      nameWrap.innerHTML = '<span class="product-num">' + (idx+1) + '</span>' + p.name;
+
+      var slot = document.createElement('div');
+      slot.className = 'drop-slot';
+      slot.dataset.slotIndex = idx;
+      var placeholder = document.createElement('span');
+      placeholder.className = 'slot-placeholder';
+      placeholder.textContent = 'Glissez une source ici';
+      slot.appendChild(placeholder);
+
+      card.appendChild(iconWrap);
+      card.appendChild(nameWrap);
+      card.appendChild(slot);
+      list.appendChild(card);
+      slotEls.push(slot);
+    });
+  }
+
+  function renderPool(){
+    poolEl = document.getElementById('pool');
+    poolEl.innerHTML = '';
+    sortedLetters.forEach(function(l){
+      poolEl.appendChild(makeSourceCard(l));
+    });
+  }
+
+  function refreshSlot(idx){
+    var slot = slotEls[idx];
+    var hasCard = !!slot.querySelector('.source-card');
+    var placeholder = slot.querySelector('.slot-placeholder');
+    if(placeholder) placeholder.style.display = hasCard ? 'none' : 'block';
+    slot.classList.toggle('filled', hasCard);
+    if(hasCard) slot.classList.remove('missing');
+  }
+
+  function insertIntoPoolSorted(card){
+    var letter = card.dataset.letter;
+    var siblings = poolEl.querySelectorAll('.source-card');
+    var inserted = false;
+    for(var i=0;i<siblings.length;i++){
+      if(siblings[i].dataset.letter > letter){
+        poolEl.insertBefore(card, siblings[i]);
+        inserted = true;
+        break;
+      }
+    }
+    if(!inserted) poolEl.appendChild(card);
+  }
+
+  // Places `card` into slot `targetIndex`. If that slot already holds a
+  // different card, the occupant is displaced back to `card`'s previous
+  // location (a swap), so no source is ever silently lost.
+  function placeCardInSlot(card, targetIndex, cameFrom){
+    var slot = slotEls[targetIndex];
+    var existing = slot.querySelector('.source-card');
+    if(existing && existing !== card){
+      if(cameFrom && cameFrom.type === 'slot'){
+        var backSlot = slotEls[cameFrom.index];
+        backSlot.appendChild(existing);
+        refreshSlot(cameFrom.index);
+      } else {
+        insertIntoPoolSorted(existing);
+      }
+    }
+    slot.appendChild(card);
+    refreshSlot(targetIndex);
+    if(cameFrom && cameFrom.type === 'slot' && cameFrom.index !== targetIndex){
+      refreshSlot(cameFrom.index);
+    }
+  }
+
+  function returnCardToPool(card, cameFrom){
+    insertIntoPoolSorted(card);
+    if(cameFrom && cameFrom.type === 'slot') refreshSlot(cameFrom.index);
+  }
+
+  function getDropTargetAt(x, y){
+    for(var i=0;i<slotEls.length;i++){
+      var r = slotEls[i].getBoundingClientRect();
+      if(x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) return { type:'slot', index:i };
+    }
+    var pr = poolEl.getBoundingClientRect();
+    if(x>=pr.left && x<=pr.right && y>=pr.top && y<=pr.bottom) return { type:'pool' };
+    return null;
+  }
+
+  // ---------- Drag handling (Pointer Events: works for mouse & touch) ----------
+  var drag = null; // { card, origin:{type,index}, offsetX, offsetY }
+
+  function onCardPointerDown(e){
+    if(e.button !== undefined && e.button !== 0) return;
+    var card = e.currentTarget;
+    e.preventDefault();
+    var rect = card.getBoundingClientRect();
+    var parentSlot = card.parentElement.closest ? card.parentElement.closest('.drop-slot') : null;
+    var origin = parentSlot ? { type:'slot', index: parseInt(parentSlot.dataset.slotIndex, 10) } : { type:'pool' };
+
+    drag = {
+      card: card,
+      origin: origin,
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top
+    };
+
+    card.style.width = rect.width + 'px';
+    card.style.left = rect.left + 'px';
+    card.style.top = rect.top + 'px';
+    card.classList.add('dragging');
+    document.body.appendChild(card);
+
+    try { card.setPointerCapture(e.pointerId); } catch(err){}
+    card.addEventListener('pointermove', onCardPointerMove);
+    card.addEventListener('pointerup', onCardPointerUp);
+    card.addEventListener('pointercancel', onCardPointerUp);
+  }
+
+  function onCardPointerMove(e){
+    if(!drag) return;
+    var card = drag.card;
+    card.style.left = (e.clientX - drag.offsetX) + 'px';
+    card.style.top = (e.clientY - drag.offsetY) + 'px';
+
+    document.querySelectorAll('.drop-slot.drag-over').forEach(function(s){ s.classList.remove('drag-over'); });
+    var target = getDropTargetAt(e.clientX, e.clientY);
+    if(target && target.type === 'slot') slotEls[target.index].classList.add('drag-over');
+
+    var edge = 70;
+    if(e.clientY < edge) window.scrollBy(0, -14);
+    else if(e.clientY > window.innerHeight - edge) window.scrollBy(0, 14);
+  }
+
+  function onCardPointerUp(e){
+    if(!drag) return;
+    var card = drag.card;
+    var origin = drag.origin;
+    try { card.releasePointerCapture(e.pointerId); } catch(err){}
+    card.removeEventListener('pointermove', onCardPointerMove);
+    card.removeEventListener('pointerup', onCardPointerUp);
+    card.removeEventListener('pointercancel', onCardPointerUp);
+
+    document.querySelectorAll('.drop-slot.drag-over').forEach(function(s){ s.classList.remove('drag-over'); });
+    card.classList.remove('dragging');
+    card.style.position = '';
+    card.style.left = '';
+    card.style.top = '';
+    card.style.width = '';
+
+    var target = getDropTargetAt(e.clientX, e.clientY);
+    if(target && target.type === 'slot'){
+      placeCardInSlot(card, target.index, origin);
+    } else {
+      returnCardToPool(card, origin);
+    }
+    drag = null;
+  }
+
+  function renderTips(){
+    var grid = document.getElementById('tips-grid');
+    var html = '';
+    tips.forEach(function(t){
+      html += '<div class="tip-card"><div class="tip-icon">' + icons[t.icon] + '</div><div class="tip-text">' + t.text + '</div></div>';
+    });
+    grid.innerHTML = html;
+  }
+
+  function goTo(screen){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById('screen-' + screen).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function submitQuiz(){
+    var missing = [];
+    var userLetters = [];
+    products.forEach(function(p, idx){
+      var card = slotEls[idx].querySelector('.source-card');
+      if(!card){
+        missing.push(idx);
+        slotEls[idx].classList.add('missing');
+        userLetters.push(null);
+      } else {
+        slotEls[idx].classList.remove('missing');
+        userLetters.push(card.dataset.letter);
+      }
+    });
+    var alertBox = document.getElementById('missing-alert');
+    if(missing.length){
+      alertBox.classList.add('show');
+      slotEls[missing[0]].scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    alertBox.classList.remove('show');
+
+    var score = 0;
+    var resultsHTML = '';
+    products.forEach(function(p, idx){
+      var userLetter = userLetters[idx];
+      var correct = (userLetter === p.letter);
+      if(correct) score++;
+
+      resultsHTML += '<div class="result-card">' +
+        '<div class="product-head">' +
+          '<span class="num-badge">' + (idx+1) + '</span>' +
+          '<span class="product-icon" style="width:32px;height:32px;">' + productIconHTML(p) + '</span>' +
+          '<span class="product-name">' + p.name + '</span>' +
+          '<span class="verdict-pill ' + (correct ? 'ok' : 'ko') + '">' + (correct ? '&#10003; Correct' : '&#10007; Incorrect') + '</span>' +
+        '</div>' +
+        '<div class="answer-line">Votre réponse&nbsp;: <b>' + userLetter + '. ' + sources[userLetter] + '</b></div>' +
+        (correct ? '' : '<div class="correct-line">Bonne réponse&nbsp;: <b>' + p.letter + '. ' + sources[p.letter] + '</b></div>') +
+        '<div class="story">' + p.story + '</div>' +
+      '</div>';
+    });
+
+    document.getElementById('results-list').innerHTML = resultsHTML;
+    document.getElementById('score-num').textContent = score + ' / ' + products.length;
+    document.getElementById('score-gauge-fill').style.width = Math.round((score/products.length)*100) + '%';
+
+    goTo('results');
+  }
+
+  function restartQuiz(){
+    // Return every source card (whether in a slot or still in the pool) to the pool, sorted.
+    slotEls.forEach(function(slot, idx){
+      var card = slot.querySelector('.source-card');
+      if(card) insertIntoPoolSorted(card);
+      refreshSlot(idx);
+      slot.classList.remove('missing');
+    });
+    document.getElementById('missing-alert').classList.remove('show');
+    goTo('intro');
+  }
+
+  renderProducts();
+  renderPool();
+  renderTips();
+</script>
+</body>
+</html>
